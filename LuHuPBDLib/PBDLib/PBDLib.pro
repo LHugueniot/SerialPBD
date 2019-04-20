@@ -28,18 +28,17 @@ OTHER_FILES+=models/*.obj
 
 INCLUDEPATH+=/home/datlucien/assimp/include include
 
-HEADERS +=  include/kernel.h \
+HEADERS +=  \
             include/PBDLib \
             include/pbdobject.h \
             include/PBDLib \
-            include/indexDuo.h \
             include/solver.h \
-    include/utilities.h
+            include/utilities.h
 
-SOURCES +=  src/kernel.cpp \
+SOURCES +=  \
             src/pbdobject.cpp \
             src/solver.cpp \
-    include/utilities.cpp
+            src/utilities.cpp
 
 OBJECTS_DIR+= obj/
 

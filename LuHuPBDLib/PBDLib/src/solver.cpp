@@ -1,4 +1,6 @@
 #include "solver.h"
+#include <algorithm>
+
 
 namespace LuHu {
 
@@ -87,41 +89,70 @@ void solver::RunSolver(float dt)
     float inv_dt = 1/dt;
     for(std::shared_ptr<PBDobject> & pObject :m_PBDObjects)
     {
-        auto objPoints= pObject->getPoints();
-        auto objConstraints = pObject.get()->getConstraints();
+        auto objPPos= pObject->getPointPositions();
+        auto objPVel= pObject->getPointVelocities();
+        auto objPMasse= pObject->getPointMasses();
+        auto objPInvMass= pObject->getPointInvMasses();
 
-        for(uint i=0; i<objPoints.size(); i++)
+        auto objDistCons = pObject->getDistConstraints();
+        auto objDistConsRestLength = pObject->getDistConRestLength();
+        auto objBendingCons = pObject->getBendingConstraints();
+
+        uint numPoints = objPPos.size();
+
+        std::vector<glm::vec3> projectedPosition(numPoints);
+
+        for(uint i=0; i<numPoints; i++)
         {
-            point & p= *(objPoints[i].get());
-            p.setV( p.getV()+
+
+            pObject->setPointVelocity(i, ( pObject->getPointVelocity(i)+
                     (m_gravity*
                      m_dampening*
-                     p.getIM()*
-                     inv_dt));
+                     pObject->getPointInvMass(i)*
+                     inv_dt)));
 
-            p.setTmp(p.getP()+
-                     p.getV()*
-                     inv_dt);
+            projectedPosition[i]=   pObject->getPointPosition(i)+
+                                    pObject->getPointVelocity(i)*
+                                    inv_dt;
         }
 
-        for (uint i=0; i<5; i++)
+        for (uint k=0; k<5; k++)
         {
-            for (uint j=0; j<objConstraints.size(); j++)
+            for (uint j=0; j<objDistCons.size(); j+=2)
             {
-                objConstraints[j]->timeStep();
+                auto m_p1=objDistCons[j];
+                auto m_p2=objDistCons[j+1];
+                glm::vec3 dir = projectedPosition[m_p1] - projectedPosition[m_p2];
+
+                float len = glm::length(dir);
+                float inv_mass=objPInvMass[m_p1] + objPInvMass[m_p2];
+
+                projectedPosition[m_p1]= (
+                            (projectedPosition[m_p1] -
+                             (objPInvMass[m_p1]/inv_mass)*
+                             (len - objDistConsRestLength[j/2])*
+                             (dir/len)
+                             )
+                            );
+
+
+                projectedPosition[m_p2]= (
+                            (projectedPosition[m_p2] +
+                             (objPInvMass[m_p2]/inv_mass)*
+                             (len - objDistConsRestLength[j/2])*
+                             (dir/len)
+                             )
+                            );
             }
         }
 
-        for (uint i=0; i<objPoints.size(); i++)
+        for (uint i=0; i<numPoints; i++)
         {
-            point & p= *(objPoints[i].get());
-
-            p.setV( (p.getTmpPos() - p.getP())/ inv_dt);
-            p.setP(p.getTmpPos());
+            pObject->setPointVelocity( i, (projectedPosition[i] - objPPos[i])/ inv_dt );
+            pObject->setPointPosition( i, projectedPosition[i] + objPPos[i] );
         }
 
     }
-
 }
 
 } // end of namespace
