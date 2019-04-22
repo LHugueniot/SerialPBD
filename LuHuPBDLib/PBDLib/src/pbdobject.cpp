@@ -15,37 +15,37 @@ PBDobject::PBDobject()
 
 bool PBDobject::Initialize(std::string _model, uint _meshIndex, glm::vec3 _originalPos,float _allPointsMass)
 {
-    m_modelName=_model;
-    m_originalPosition=_originalPos;
-
-    Mesh mesh(_model,_meshIndex);
-    auto uniqueIndex = new std::vector<uint>;
-    m_pointPos=mesh.getUniquePoints(mesh.m_pointPositions, uniqueIndex);
-
-    for (uint i=0; i<m_pointPos.size(); i++) {
-        m_pointMass.push_back(_allPointsMass);
-        m_pointVel.push_back(glm::vec3(0));
-    }
-
-
-    auto uniqueFaces=mesh.getFaceIndices(m_pointPos, *uniqueIndex);
-
-    auto uniqueEdges = mesh.getEdgeIndices(m_pointPos, *uniqueIndex);
-
-    for (uint i=0; i<uniqueFaces.size();i++) {
-        m_facePoints.push_back(uniqueFaces[i].p1);
-        m_facePoints.push_back(uniqueFaces[i].p2);
-        m_facePoints.push_back(uniqueFaces[i].p3);
-    }
-    for (uint i=0; i<uniqueEdges.size();i++) {
-        m_distanceConstraint.push_back(uniqueEdges[i].p1);
-        m_distanceConstraint.push_back(uniqueEdges[i].p2);
-    }
-    for (auto &p : m_pointPos)
-    {
-        p+=m_originalPosition;
-    }
-
+//    m_modelName=_model;
+//    m_originalPosition=_originalPos;
+//
+//    Mesh mesh(_model,_meshIndex);
+//    auto uniqueIndex = new std::vector<uint>;
+//    m_pointPos=mesh.getUniquePoints(mesh.m_pointPositions, uniqueIndex);
+//
+//    for (uint i=0; i<m_pointPos.size(); i++) {
+//        m_pointMass.push_back(_allPointsMass);
+//        m_pointVel.push_back(glm::vec3(0));
+//    }
+//
+//
+//    auto uniqueFaces=mesh.getFaceIndices(m_pointPos, *uniqueIndex);
+//
+//    auto uniqueEdges = mesh.getEdgeIndices(m_pointPos, *uniqueIndex);
+//
+//    for (uint i=0; i<uniqueFaces.size();i++) {
+//        m_facePoints.push_back(uniqueFaces[i].p1);
+//        m_facePoints.push_back(uniqueFaces[i].p2);
+//        m_facePoints.push_back(uniqueFaces[i].p3);
+//    }
+//    for (uint i=0; i<uniqueEdges.size();i++) {
+//        m_distanceConstraint.push_back(uniqueEdges[i].p1);
+//        m_distanceConstraint.push_back(uniqueEdges[i].p2);
+//    }
+//    for (auto &p : m_pointPos)
+//    {
+//        p+=m_originalPosition;
+//    }
+//
     return true;
 }
 
@@ -200,9 +200,18 @@ void PBDobject::addDistConstraint(uint _IndexPoint1, uint _IndexPoint2)
 
 bool PBDobject::addDistConstraints(std::vector<uint> _IndexPoint)
 {
+
     if(_IndexPoint.size()%2==0)
     {
         m_distanceConstraint.insert(m_distanceConstraint.end(), _IndexPoint.begin(), _IndexPoint.end());
+
+        for(uint i=0;i<_IndexPoint.size(); i+=2)
+        {
+            glm::vec3 _p1 = m_pointPos[_IndexPoint[i]];
+            glm::vec3 _p2 = m_pointPos[_IndexPoint[i+1]];
+            float restLen = glm::length(_p1 - _p2);
+            m_distanceConRestLength.push_back(restLen);
+        }
         return true;
     }
     else
@@ -250,6 +259,105 @@ const std::vector<uint> PBDobject::getBendingConstraints() const
 const std::vector<uint> PBDobject::getFacesPoints() const
 {
     return m_facePoints;
+}
+
+std::vector<std::vector<uint>> PBDobject::generateColourMap()
+{
+    //Create distance Constraint Node Graph
+    std::vector<std::vector<uint>> nodeGraph;
+
+    for(uint i=0; i<m_distanceConstraint.size()/2; i++)
+    {
+        uint ii=i*2;
+
+
+        std::vector<uint> temp;
+        for(uint j=0; j<m_distanceConstraint.size()/2; j++)
+        {
+            uint jj=j*2;
+
+            if(     (m_distanceConstraint[jj]    == m_distanceConstraint[ii]    ||
+                    m_distanceConstraint[jj+1]   == m_distanceConstraint[ii]    ||
+                    m_distanceConstraint[jj]     == m_distanceConstraint[ii+1]  ||
+                    m_distanceConstraint[jj+1]   == m_distanceConstraint[ii+1]  )   )
+            {
+                if(!(m_distanceConstraint[jj]    == m_distanceConstraint[ii]    &&
+                    m_distanceConstraint[jj+1]   == m_distanceConstraint[ii+1]  ))
+                {
+                    temp.push_back(j);
+                }
+            }
+        }
+        nodeGraph.push_back(temp);
+    }
+
+    for(uint k =0; k< nodeGraph.size(); k++)
+    {
+        std::cout<<"Constraint "<<m_distanceConstraint[k*2]<<" "<<m_distanceConstraint[k*2+1]<<" is connected to: \n";
+        for(uint f =0; f< nodeGraph[k].size(); f++)
+        {
+            std::cout<<m_distanceConstraint[nodeGraph[k][f]]<<" "<<m_distanceConstraint[nodeGraph[k][f+1]]<<"\n";
+        }
+    }
+
+
+    uint nodegraphsize=0;
+    for(auto b : nodeGraph)
+    {
+        nodegraphsize+=b.size();
+    }
+
+    std::cout<<"NodeGraph is of size:"<<nodegraphsize<<"\n\n";
+
+    //Create Colour Graph based
+    std::vector<uint> colourIndex(nodeGraph.size());
+
+
+    std::vector<std::vector<uint>> colourGraph={std::vector<uint>{0}};
+
+    for(uint k =0; k< nodeGraph.size(); k++)
+    {
+        std::vector<bool> whitelist;
+
+        for(uint a=0;a<colourGraph.size(); a++)
+        {
+            whitelist.push_back(true);
+        }
+        for(uint l=0 ; l<nodeGraph[k].size(); l++)
+        {
+            if(l<colourIndex.size())
+            {
+                whitelist[colourIndex[nodeGraph[k][l]]]=false;
+            }
+        }
+
+        uint bestColour=UINT_MAX;
+
+        for(uint t=0;t<whitelist.size(); t++)
+        {
+            if(whitelist[t]==true)
+            {
+                if(colourGraph[t].size()<bestColour)
+                {
+                    bestColour=t;
+                }
+            }
+        }
+
+        if(bestColour==UINT_MAX)
+        {
+            colourGraph.push_back(std::vector<uint>{k});
+            colourIndex[k]=colourGraph.size()-1;
+        }
+        else
+        {
+            colourGraph[bestColour].push_back(k);
+            colourIndex[k]=bestColour;
+        }
+
+    }
+    return colourGraph;
+
 }
 
 } // end of namespace

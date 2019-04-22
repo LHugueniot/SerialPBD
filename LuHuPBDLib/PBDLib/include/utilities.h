@@ -80,7 +80,7 @@ std::vector<glm::vec3> removeDuplicates(std::vector<glm::vec3> _pVec);
 
 
 //-------------------------------------------------Mesh--------------------------------------------------
-
+/*
 struct Mesh{
 
     Mesh(std::string _model, uint _index){  m_modelName=_model;
@@ -110,6 +110,8 @@ struct Mesh{
     std::vector<indexTrio> m_faceIndices;
 
 };
+*/
+
 
 }
 

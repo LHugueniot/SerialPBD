@@ -1,5 +1,9 @@
 TEMPLATE=app
-LIBS+=-L/usr/local/lib -L/home/datlucien/Documents/AP/CudaPBD/LuHuPBDLib/PBDLib/build -lgtest -lgtest_main -lPBDLib
+LIBS+=-L/home/s4906706/Documents/AP/Projects/CudaPBD/LuHuPBDLib/PBDLib/build -lLuHuPBD
+LIBS+=-L/usr/local/lib  -lgtest -lgtest_main  #-L../../PBDLib/build -L/home/datlucien/Documents/AP/CudaPBD/LuHuPBDLib/PBDLib/build
+
+#message(system($$PWD/../PBDLib/build))
+
 #CONFIG+=c++11
 
 SOURCES += src/main.cpp

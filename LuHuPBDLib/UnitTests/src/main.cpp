@@ -96,6 +96,7 @@ TEST(PBDobject, initialise_false_using_given_positions)
     ASSERT_FALSE(testval);
 }
 
+/*
 TEST(Mesh, Constructor)
 {
     LuHu::Mesh Test("deCube.obj", 0);
@@ -232,4 +233,58 @@ TEST(PBDobject, initialise_true_using_obj_mesh)
     ASSERT_EQ(TestObj.getFacesPoints(),     objUniqueFaces      );
     ASSERT_EQ(TestObj.getDistConstraints(), objUniqueEdges      );
 
+}
+*/
+
+TEST(PBDobject, InitializeWithManualDataInput)
+{
+    LuHu::PBDobject TestObj;
+    glm::vec3 oiriginalPos(0,0,1);
+    //bool PBDobject::Initialize(glm::vec3 _originalPos, std::vector<glm::vec3> _PointPos, std::vector<glm::vec3> _PointVel, std::vector<float> _PointMass)
+    std::vector<glm::vec3> _PointPos={
+        glm::vec3(0,0,0),
+        glm::vec3(1,0,0),
+        glm::vec3(2,0,0),
+        glm::vec3(0,1,0),
+        glm::vec3(1,1,0),
+        glm::vec3(2,1,0)
+    };
+
+    std::vector<glm::vec3> _PointVel={
+        glm::vec3(0,0,0),
+        glm::vec3(0,0,0),
+        glm::vec3(0,0,0),
+        glm::vec3(0,0,0),
+        glm::vec3(0,0,0),
+        glm::vec3(0,0,0)
+    };
+    std::vector<float> _PointMass={
+        1,1,1,1,1,1
+    };
+
+    TestObj.Initialize(oiriginalPos, _PointPos, _PointVel, _PointMass);
+
+    std::vector<uint> _DistanceCons={
+        0,1 ,
+        1,2 ,
+        0,3 ,
+        3,4 ,
+        0,4 ,
+        1,4 ,
+        1,5 ,
+        4,5 ,
+        2,5
+    };
+
+    TestObj.addDistConstraints(_DistanceCons);
+
+    ASSERT_EQ(_DistanceCons,TestObj.getDistConstraints());
+    std::vector<std::vector<uint>> colourMap = TestObj.generateColourMap();
+
+    for (auto a:colourMap)
+    {
+        for(auto b: a)
+            std::cout<<b<<" ";
+        std::cout<<"\n";
+    }
 }
