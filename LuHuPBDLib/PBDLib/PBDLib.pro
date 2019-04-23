@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-TARGET = build/LuHuPBD
+TARGET = LuHuPBD
 TEMPLATE = lib
 
 #DEFINES += PBDLIB_LIBRARY #MODEL_DIR='$${PWD}'
@@ -22,7 +22,7 @@ DEFINES += QT_DEPRECATED_WARNING #'CURRENT_DIR=$$(PWD)'
 
 #MOC_DIR +=
 
-CONFIG+=c++11
+#CONFIG+=c++11
 
 OTHER_FILES+=models/*.obj
 

@@ -1,10 +1,14 @@
 TEMPLATE=app
-LIBS+=-L/home/s4906706/Documents/AP/Projects/CudaPBD/LuHuPBDLib/PBDLib/build -lLuHuPBD
-LIBS+=-L/usr/local/lib  -lgtest -lgtest_main  #-L../../PBDLib/build -L/home/datlucien/Documents/AP/CudaPBD/LuHuPBDLib/PBDLib/build
+
+
+CONFIG+=c++11
+
+#LIBS+= -L/home/s4906706/Documents/AP/Projects/CudaPBD/LuHuPBDLib/PBDLib/build -lLuHuPBD
+
+
 
 #message(system($$PWD/../PBDLib/build))
 
-#CONFIG+=c++11
 
 SOURCES += src/main.cpp
 
@@ -13,6 +17,9 @@ OBJECTS_DIR+=obj/
 TARGET= build/Tests
 
 INCLUDEPATH+= ../PBDLib/include
+
+LIBS+= -L/home/datlucien/Documents/AP/CudaPBD/LuHuPBDLib/PBDLib -lLuHuPBD
+LIBS+= -L/usr/local/lib  -lgtest -lgtest_main
 
 #QMAKE_RPATHDIR+= $$PWD/../PBDLib
 

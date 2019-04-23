@@ -1,12 +1,6 @@
 #include "pbdobject.h"
 
-#include "utilities.h"
-
 namespace LuHu {
-
-
-
-
 
 PBDobject::PBDobject()
 {
@@ -15,37 +9,37 @@ PBDobject::PBDobject()
 
 bool PBDobject::Initialize(std::string _model, uint _meshIndex, glm::vec3 _originalPos,float _allPointsMass)
 {
-//    m_modelName=_model;
-//    m_originalPosition=_originalPos;
-//
-//    Mesh mesh(_model,_meshIndex);
-//    auto uniqueIndex = new std::vector<uint>;
-//    m_pointPos=mesh.getUniquePoints(mesh.m_pointPositions, uniqueIndex);
-//
-//    for (uint i=0; i<m_pointPos.size(); i++) {
-//        m_pointMass.push_back(_allPointsMass);
-//        m_pointVel.push_back(glm::vec3(0));
-//    }
-//
-//
-//    auto uniqueFaces=mesh.getFaceIndices(m_pointPos, *uniqueIndex);
-//
-//    auto uniqueEdges = mesh.getEdgeIndices(m_pointPos, *uniqueIndex);
-//
-//    for (uint i=0; i<uniqueFaces.size();i++) {
-//        m_facePoints.push_back(uniqueFaces[i].p1);
-//        m_facePoints.push_back(uniqueFaces[i].p2);
-//        m_facePoints.push_back(uniqueFaces[i].p3);
-//    }
-//    for (uint i=0; i<uniqueEdges.size();i++) {
-//        m_distanceConstraint.push_back(uniqueEdges[i].p1);
-//        m_distanceConstraint.push_back(uniqueEdges[i].p2);
-//    }
-//    for (auto &p : m_pointPos)
-//    {
-//        p+=m_originalPosition;
-//    }
-//
+    m_modelName=_model;
+    m_originalPosition=_originalPos;
+
+    Mesh mesh(_model,_meshIndex);
+    auto uniqueIndex = new std::vector<uint>;
+    m_pointPos=mesh.getUniquePoints(mesh.m_pointPositions, uniqueIndex);
+
+    for (uint i=0; i<m_pointPos.size(); i++) {
+        m_pointMass.push_back(_allPointsMass);
+        m_pointVel.push_back(glm::vec3(0));
+    }
+
+
+    auto uniqueFaces=mesh.getFaceIndices(m_pointPos, *uniqueIndex);
+
+    auto uniqueEdges = mesh.getEdgeIndices(m_pointPos, *uniqueIndex);
+
+    for (uint i=0; i<uniqueFaces.size();i++) {
+        m_facePoints.push_back(uniqueFaces[i].p1);
+        m_facePoints.push_back(uniqueFaces[i].p2);
+        m_facePoints.push_back(uniqueFaces[i].p3);
+    }
+    for (uint i=0; i<uniqueEdges.size();i++) {
+        m_distanceConstraint.push_back(uniqueEdges[i].p1);
+        m_distanceConstraint.push_back(uniqueEdges[i].p2);
+    }
+    for (auto &p : m_pointPos)
+    {
+        p+=m_originalPosition;
+    }
+
     return true;
 }
 
@@ -177,8 +171,8 @@ bool PBDobject::addPoints(std::vector<glm::vec3> _newPointPos,
                           std::vector<float> _newPointInvMass)
 {
     if( _newPointPos.size() == _newPointVel.size() &&
-        _newPointPos.size() == _newPointMass.size() &&
-        _newPointPos.size()== _newPointInvMass.size())
+            _newPointPos.size() == _newPointMass.size() &&
+            _newPointPos.size()== _newPointInvMass.size())
     {
         m_pointPos.insert(m_pointPos.end(), _newPointPos.begin(), _newPointPos.end());
         m_pointVel.insert(m_pointVel.end(), _newPointVel.begin(), _newPointVel.end());
@@ -264,31 +258,27 @@ const std::vector<uint> PBDobject::getFacesPoints() const
 std::vector<std::vector<uint>> PBDobject::generateColourMap()
 {
     //Create distance Constraint Node Graph
-    std::vector<std::vector<uint>> nodeGraph;
+    std::vector<std::vector<uint>> nodeGraph(m_distanceConstraint.size()/2);
 
     for(uint i=0; i<m_distanceConstraint.size()/2; i++)
     {
         uint ii=i*2;
 
-
-        std::vector<uint> temp;
         for(uint j=0; j<m_distanceConstraint.size()/2; j++)
         {
             uint jj=j*2;
 
             if(     (m_distanceConstraint[jj]    == m_distanceConstraint[ii]    ||
-                    m_distanceConstraint[jj+1]   == m_distanceConstraint[ii]    ||
-                    m_distanceConstraint[jj]     == m_distanceConstraint[ii+1]  ||
-                    m_distanceConstraint[jj+1]   == m_distanceConstraint[ii+1]  )   )
+                     m_distanceConstraint[jj+1]   == m_distanceConstraint[ii]    ||
+                     m_distanceConstraint[jj]     == m_distanceConstraint[ii+1]  ||
+                     m_distanceConstraint[jj+1]   == m_distanceConstraint[ii+1]  )   )
             {
-                if(!(m_distanceConstraint[jj]    == m_distanceConstraint[ii]    &&
-                    m_distanceConstraint[jj+1]   == m_distanceConstraint[ii+1]  ))
+                if(i!=j)
                 {
-                    temp.push_back(j);
+                    nodeGraph[i].push_back(j);
                 }
             }
         }
-        nodeGraph.push_back(temp);
     }
 
     for(uint k =0; k< nodeGraph.size(); k++)
@@ -296,7 +286,7 @@ std::vector<std::vector<uint>> PBDobject::generateColourMap()
         std::cout<<"Constraint "<<m_distanceConstraint[k*2]<<" "<<m_distanceConstraint[k*2+1]<<" is connected to: \n";
         for(uint f =0; f< nodeGraph[k].size(); f++)
         {
-            std::cout<<m_distanceConstraint[nodeGraph[k][f]]<<" "<<m_distanceConstraint[nodeGraph[k][f+1]]<<"\n";
+            std::cout<<m_distanceConstraint[nodeGraph[k][f]*2]<<" "<<m_distanceConstraint[nodeGraph[k][f]*2+1]<<"\n";
         }
     }
 
@@ -307,25 +297,32 @@ std::vector<std::vector<uint>> PBDobject::generateColourMap()
         nodegraphsize+=b.size();
     }
 
-    std::cout<<"NodeGraph is of size:"<<nodegraphsize<<"\n\n";
+    std::cout<<"\nNodeGraph is of size:"<<nodegraphsize<<"\n\n";
 
     //Create Colour Graph based
-    std::vector<uint> colourIndex(nodeGraph.size());
+    std::vector<int> colourIndex(nodeGraph.size());
 
-
-    std::vector<std::vector<uint>> colourGraph={std::vector<uint>{0}};
-
-    for(uint k =0; k< nodeGraph.size(); k++)
+    for(uint t=0 ;t< colourIndex.size();t++)
     {
-        std::vector<bool> whitelist;
+        colourIndex[t]=-1;
+    }
+    colourIndex[0]=0;
 
-        for(uint a=0;a<colourGraph.size(); a++)
+    std::vector<std::vector<uint>> colourGraph(1);
+    colourGraph[0].push_back(0);
+
+    for(uint k =1; k< nodeGraph.size(); k++)
+    {
+        std::vector<bool> whitelist(colourGraph.size());
+
+        for(uint t=0 ;t< whitelist.size();t++)
         {
-            whitelist.push_back(true);
+            whitelist[t]=true;
         }
+
         for(uint l=0 ; l<nodeGraph[k].size(); l++)
         {
-            if(l<colourIndex.size())
+            if(colourIndex[nodeGraph[k][l]]>-1 )
             {
                 whitelist[colourIndex[nodeGraph[k][l]]]=false;
             }

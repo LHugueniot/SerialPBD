@@ -7,6 +7,8 @@
 #include <vector>
 #include <memory>
 
+#include "utilities.h"
+
 
 namespace LuHu {    //namespace (to be changed)
 

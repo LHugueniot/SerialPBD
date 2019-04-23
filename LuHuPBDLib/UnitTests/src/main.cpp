@@ -96,7 +96,7 @@ TEST(PBDobject, initialise_false_using_given_positions)
     ASSERT_FALSE(testval);
 }
 
-/*
+
 TEST(Mesh, Constructor)
 {
     LuHu::Mesh Test("deCube.obj", 0);
@@ -234,7 +234,7 @@ TEST(PBDobject, initialise_true_using_obj_mesh)
     ASSERT_EQ(TestObj.getDistConstraints(), objUniqueEdges      );
 
 }
-*/
+
 
 TEST(PBDobject, InitializeWithManualDataInput)
 {
@@ -281,10 +281,13 @@ TEST(PBDobject, InitializeWithManualDataInput)
     ASSERT_EQ(_DistanceCons,TestObj.getDistConstraints());
     std::vector<std::vector<uint>> colourMap = TestObj.generateColourMap();
 
-    for (auto a:colourMap)
-    {
-        for(auto b: a)
-            std::cout<<b<<" ";
-        std::cout<<"\n";
+    for (uint it1=0; it1<colourMap.size(); it1++) {
+        std::cout<<"Colour "<<it1<<" has these constraints:\n";
+        for (uint it2=0; it2<colourMap[it1].size(); it2++) {
+            auto con=colourMap[it1][it2]*2;
+            auto c1=TestObj.getDistConstraints()[con];
+            auto c2=TestObj.getDistConstraints()[con+1];
+            std::cout<<"c "<<c1<<" "<<c2<<"\n";
+        }
     }
 }
