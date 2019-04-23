@@ -68,15 +68,14 @@ struct indexTrio
 };
 
 const aiScene* getModel(std::string _model);
-std::vector<glm::vec3> storePoints(aiMesh *_assimpMesh);
-std::vector<indexTrio> storeFaceIndices(aiMesh *_assimpMesh);
+
 void printVec3(glm::vec3 _vec);
+
 glm::vec3 aiToGLM(aiVector3D mVertices);
+
 std::vector<glm::vec3> storePoints(aiMesh* _assimpMesh);
+
 std::vector<indexTrio> storeFaceIndices(aiMesh* _assimpMesh);
-bool compare(glm::vec3 temp, std::vector<glm::vec3> bigVec);
-bool compare( std::vector<glm::vec3> bigVec1,  std::vector<glm::vec3> bigVec2);
-std::vector<glm::vec3> removeDuplicates(std::vector<glm::vec3> _pVec);
 
 
 //-------------------------------------------------Mesh--------------------------------------------------

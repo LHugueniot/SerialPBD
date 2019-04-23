@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-TARGET = LuHuPBD
+TARGET = build/LuHuPBD
 TEMPLATE = lib
 
 #DEFINES += PBDLIB_LIBRARY #MODEL_DIR='$${PWD}'

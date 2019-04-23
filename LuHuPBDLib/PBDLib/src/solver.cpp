@@ -60,6 +60,7 @@ bool solver::rmPBDobject(std::shared_ptr<LuHu::PBDobject> _PBDobjectPtr)
     {
         auto it = std::find(m_PBDObjects.begin(), m_PBDObjects.end(),_PBDobjectPtr);
         m_PBDObjects.erase(it);
+        return true;
     }
     else{
         return false;
@@ -94,7 +95,7 @@ void solver::RunSolver(float dt)
         auto objPMasse= pObject->getPointMasses();
         auto objPInvMass= pObject->getPointInvMasses();
 
-        auto objDistCons = pObject->getDistConstraints();
+        auto objDistCons = pObject->getDistanceConstraints();
         auto objDistConsRestLength = pObject->getDistConRestLength();
         auto objBendingCons = pObject->getBendingConstraints();
 

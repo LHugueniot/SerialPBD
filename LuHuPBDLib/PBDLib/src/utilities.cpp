@@ -2,8 +2,6 @@
 
 namespace LuHu {
 
-
-
 const aiScene* getModel(std::string _model)
 {
     std::string path = std::experimental::filesystem::current_path();
@@ -14,7 +12,7 @@ const aiScene* getModel(std::string _model)
                                        aiProcess_JoinIdenticalVertices  |
                                        aiProcess_SortByPType);
     if(!scene){
-        std::cout<<aiGetErrorString()<<"\n";
+        std::cout<<"\n"<<aiGetErrorString()<<"\n";
         return NULL;
     }
     return scene;
@@ -36,6 +34,9 @@ std::vector<glm::vec3> storePoints(aiMesh* _assimpMesh)
     for(uint j=0; j<_assimpMesh->mNumVertices; j++)
     {
         temp.push_back(aiToGLM(_assimpMesh->mVertices[j]));
+        //auto a = aiToGLM(_assimpMesh->mVertices[j]);
+
+        //std::cout<<"glm::vec3("<<a.x<<","<<a.y<<","<<a.z<<"),\n";
     }
     return temp;
 }
@@ -59,16 +60,13 @@ std::vector<indexTrio> storeFaceIndices(aiMesh* _assimpMesh)
         }
         else
         {
-            std::cout<<"This mesh contains Quads, only triangle meshes are allowed";
+            std::cout<<"This mesh contains Quads, only triangle meshes are allowed\n";
             return std::vector<indexTrio>{indexTrio(0,0,0)};
         }
 
     }
     return temp;
 }
-
-
-
 
 std::vector<glm::vec3> Mesh::getUniquePoints(std::vector<glm::vec3> _points, std::vector<uint>* _filter)
 {

@@ -38,26 +38,20 @@ public:
     //=================================================================================================================================
     bool Initialize(glm::vec3 _originalPos, std::vector<glm::vec3> _PointPos, std::vector<glm::vec3> _PointVel, std::vector<float> _PointMass);
 
-    //=================================================================================================================================
-    /// @brief returns pointers to the points stored in PBDObject
-    //=================================================================================================================================
+
+    void addPoint(glm::vec3 _newPointPos, glm::vec3 _newPointVel, float _newPointMass, float _newPointInvMass);
+
+    bool addPoints(std::vector<glm::vec3> _newPointPos,std::vector<glm::vec3> _newPointVel, std::vector<float> _newPointMass,  std::vector<float> _newPointInvMass);
+
 
 
     const glm::vec3 getPointPosition(uint _index) const;
 
     const glm::vec3 getPointVelocity(uint _index) const;
 
-    const float getPointMass(uint _index) const;
+    float getPointMass(uint _index) const;
 
-    const float getPointInvMass(uint _index) const;
-
-    void setPointPosition(uint _index, glm::vec3 _newPos);
-
-    void setPointVelocity(uint _index, glm::vec3 _newVel);
-
-    void setPointMass(uint _index, float _newMass);
-
-    void setPointInvMass(uint _index, float _newInvMass);
+     float getPointInvMass(uint _index) const;
 
     const std::vector<glm::vec3> getPointPositions() const;
 
@@ -67,31 +61,32 @@ public:
 
     const std::vector<float> getPointInvMasses() const;
 
-    //=================================================================================================================================
-    /// @brief returns pointers to the constraints stored in PBDObject
-    //=================================================================================================================================
 
-    //=================================================================================================================================
-    /// @brief adds a point to PBDObject
-    //=================================================================================================================================
-    void addPoint(glm::vec3 _newPointPos, glm::vec3 _newPointVel, float _newPointMass, float _newPointInvMass);
 
-    bool addPoints(std::vector<glm::vec3> _newPointPos,std::vector<glm::vec3> _newPointVel, std::vector<float> _newPointMass,  std::vector<float> _newPointInvMass);
+    bool setPointPosition(uint _index, glm::vec3 _newPos);
+
+    bool setPointVelocity(uint _index, glm::vec3 _newVel);
+
+    bool setPointMass(uint _index, float _newMass);
+
+    bool setPointInvMass(uint _index, float _newInvMass);
+
+
 
     //=================================================================================================================================
     /// @brief adds a constraint to PBDObject
     //=================================================================================================================================
-    void addDistConstraint(uint _IndexPoint1, uint _IndexPoint2);
+    bool addDistConstraint(uint _IndexPoint1, uint _IndexPoint2);
 
     bool addDistConstraints(std::vector<uint> _IndexPoint);
 
-    const std::vector<uint> getDistConstraints()const;
+    const std::vector<uint> getDistanceConstraints()const;
 
     const std::vector<float> getDistConRestLength() const;
 
-    void addBendConstraint(uint _IndexPoint1, uint _IndexPoint2, uint _IndexPoint3);
+    bool addBendingConstraint(uint _IndexPoint1, uint _IndexPoint2, uint _IndexPoint3);
 
-    bool addBendConstraints(std::vector<uint> _IndexPoint1);
+    bool addBendingConstraints(std::vector<uint> _IndexPoint1);
 
     const std::vector<uint> getBendingConstraints() const;
 
