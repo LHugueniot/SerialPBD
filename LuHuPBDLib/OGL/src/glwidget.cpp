@@ -39,7 +39,7 @@ void GLWidget::paintGL()
 
     if(simulate==true && m_solver)// && time%10==0)
     {
-        m_solver->RunSolver(5,20);
+        m_solver->RunSolver(5,5);
     }
     glRotatef(angley,1,0,1);
     glRotatef(anglex,0,1,0);
@@ -178,7 +178,7 @@ void GLWidget::addSmolPlain()
     };
 
     std::vector<float> masses{1,1,1,1,1,1,1,1,1};
-    TestObj->Initialize(glm::vec3(0,1,0),positions, velocities, masses);
+    TestObj->Initialize(glm::vec3(0,3,0),positions, velocities, masses);
 
     std::vector<uint> ditConsraints{0,1,
                                     1,2,

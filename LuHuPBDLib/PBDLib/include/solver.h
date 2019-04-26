@@ -5,6 +5,12 @@
 
 namespace LuHu {
 
+enum constraints{
+    DISTANCE,
+    BENDING,
+    DISTANCE_AND_BENDING
+};
+
 class solver /// main class for simulation
 {
 public:
@@ -40,7 +46,7 @@ public:
 
     /// @brief RunSolver, main solver loop that runs based on time step, dt
 
-    void RunSolver(float dt, uint iterations);
+    void RunSolver(float dt, uint iterations, constraints control);
 
 
 private:

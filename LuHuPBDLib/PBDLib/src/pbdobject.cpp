@@ -69,7 +69,7 @@ bool PBDobject::Initialize(glm::vec3 _originalPos, std::vector<glm::vec3> _Point
             }
         }
 
-        for(auto p : m_pointPos)
+        for(auto &p : m_pointPos)
         {
             p+=m_originalPosition;
 
