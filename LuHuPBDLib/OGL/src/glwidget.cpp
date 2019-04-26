@@ -14,17 +14,19 @@ GLWidget::GLWidget(QWidget *parent) :
 
 void GLWidget::initializeGL()
 {
-    glClearColor(1,1,1,1);
+    glClearColor(0.75,0.75,0.75,1);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHTING);
     glEnable(GL_COLOR_MATERIAL);
 
-    m_solver= new LuHu::solver(0.99, glm::vec3(0,-0.01,0));
-    //addPlain();
+    m_solver= new LuHu::solver(0.95f, glm::vec3(0,-0.2,0));
+    //addSmolPlain();
+    addPlain();
     //addCone();
     //addcube();
-    BendingConTest();
+    //BendingConTest();
+    time=0;
 }
 
 void GLWidget::paintGL()
@@ -35,17 +37,17 @@ void GLWidget::paintGL()
 
     glColor3f(1, 0, 0.5);
 
-    if(simulate==true && m_solver)
+    if(simulate==true && m_solver)// && time%10==0)
     {
-        m_solver->RunSolver(5);
-
+        m_solver->RunSolver(5,20);
     }
-
-    glRotatef(angle,0,1,0);
+    glRotatef(angley,1,0,1);
+    glRotatef(anglex,0,1,0);
     drawPBDObjects(LINES);
-
+    drawGrid(10);
     glLoadIdentity();
     //angle++;
+    time++;
 
 }
 
@@ -71,18 +73,24 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
         std::cout<<"Esc pressed";
         break;
     case Qt::Key_W:
-        CamPos[0]+=1;
-        LookAt[0]+=1;
+        angley-=2.0;
+        paintGL();
+        updateGL();
         break;
     case Qt::Key_S:
-        CamPos[0]-=1;
-        LookAt[0]-=1;
+        angley+=2.0;
+        paintGL();
+        updateGL();
         break;
     case Qt::Key_A:
-        angle-=2.0;
+        anglex+=1.0;
+        paintGL();
+        updateGL();
         break;
     case Qt::Key_D:
-        angle+=2.0;
+        anglex-=1.0;
+        paintGL();
+        updateGL();
         break;
     case Qt::Key_M:
         simulate=!simulate;
@@ -104,57 +112,10 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
 void GLWidget::BendingConTest()
 {
     auto testObj = std::shared_ptr<LuHu::PBDobject>(new LuHu::PBDobject);
-    auto p1 = std::shared_ptr<LuHu::point>(new LuHu::point(glm::vec3(0, 0, 0), glm::vec3(0), 1.0f));
-    auto p2 = std::shared_ptr<LuHu::point>(new LuHu::point(glm::vec3(0, 1, 0), glm::vec3(0), 1.0f));
-    auto p3 = std::shared_ptr<LuHu::point>(new LuHu::point(glm::vec3(0, 2, 0), glm::vec3(0), 1.0f));
 
-    auto p4 = std::shared_ptr<LuHu::point>(new LuHu::point(glm::vec3(1, 0, 0), glm::vec3(0), 1.0f));
-    auto p5 = std::shared_ptr<LuHu::point>(new LuHu::point(glm::vec3(1, 1, 0), glm::vec3(0), 1.0f));
-    auto p6 = std::shared_ptr<LuHu::point>(new LuHu::point(glm::vec3(1, 2, 0), glm::vec3(0), 1.0f));
+    //testObj->Initialize()
+    //testObj->Initialize(glm::vec3(0,1,0), PointsVec);
 
-    auto p7 = std::shared_ptr<LuHu::point>(new LuHu::point(glm::vec3(1, 0, 1), glm::vec3(0), 1.0f));
-    auto p8 = std::shared_ptr<LuHu::point>(new LuHu::point(glm::vec3(1, 1, 1), glm::vec3(0), 1.0f));
-    auto p9 = std::shared_ptr<LuHu::point>(new LuHu::point(glm::vec3(1, 2, 1), glm::vec3(0), 1.0f));
-
-    std::vector<std::shared_ptr<LuHu::point>> PointsVec{p1, p2, p3, p4, p5, p6, p7, p8, p9};
-
-    auto bendConTest = std::shared_ptr<LuHu::bendingConstraint>  (new LuHu::bendingConstraint(p1, p2, p3,0));
-
-    auto distDonTest12 = std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p1,p2));
-
-
-    p1->setIM(0);
-    p3->setIM(0);
-
-    std::vector<std::shared_ptr<LuHu::constraint>> ConsVec{
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p1,p2)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p2,p3)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p1,p4)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p2,p4)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p2,p5)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p3,p5)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p3,p6)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p4,p5)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p5,p6)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p4,p7)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p5,p7)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p5,p8)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p6,p8)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p6,p9)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p7,p8)),
-                std::shared_ptr<LuHu::distanceConstraint>(new LuHu::distanceConstraint(p8,p9)),
-
-                std::shared_ptr<LuHu::bendingConstraint>  (new LuHu::bendingConstraint(p1, p4, p7,0)),
-                std::shared_ptr<LuHu::bendingConstraint>  (new LuHu::bendingConstraint(p2, p5, p8,0)),
-                std::shared_ptr<LuHu::bendingConstraint>  (new LuHu::bendingConstraint(p3, p6, p9,0)),
-
-                std::shared_ptr<LuHu::bendingConstraint>  (new LuHu::bendingConstraint(p1, p2, p3,0)),
-                std::shared_ptr<LuHu::bendingConstraint>  (new LuHu::bendingConstraint(p4, p5, p6,0)),
-                std::shared_ptr<LuHu::bendingConstraint>  (new LuHu::bendingConstraint(p7, p8, p9,0))};
-
-    testObj->Initialize(glm::vec3(0,1,0), PointsVec);
-
-    testObj->addConstraint(ConsVec);
 
     //testObj->addPoint(p1);
     //testObj->addPoint(p2);
@@ -166,48 +127,104 @@ void GLWidget::BendingConTest()
 
 void GLWidget::addPlain()
 {
-    auto m_testObj = std::shared_ptr<LuHu::PBDobject>(new LuHu::PBDobject);
-    auto a=m_testObj->Initialize("/home/s4906706/Documents/AP/Projects/APproj/LuHuPBDLib/PBDLib/models/plaine.obj",0,glm::vec3(0,5,0));
+    auto TestObj = std::shared_ptr<LuHu::PBDobject>(new LuHu::PBDobject);
+    auto a=TestObj->Initialize("plaine.obj",0,glm::vec3(0,5,0),1);
     if(a)
     {
         std::cout<<"working!";
 
-        m_solver->addPBDobject(m_testObj);
+        m_solver->addPBDobject(TestObj);
+        TestObj->setPointInvMass(0,0);
+        TestObj->setPointInvMass(20,0);
+        TestObj->addBendingConstraints(LuHu::generateBendConstraints(TestObj->getPointPositions(), TestObj->getDistanceConstraints()));
 
-        auto p1 = m_testObj->getPoints()[0];
-        auto p2 = m_testObj->getPoints()[21];
-        auto p3 = m_testObj->getPoints()[31];
+        //        for(TestObj.get)
+        //        {
 
-        auto bendConTest = std::shared_ptr<LuHu::bendingConstraint>  (new LuHu::bendingConstraint(p1, p2, p3,1));
-        m_testObj->addConstraint(bendConTest);
-
-        //m_testObj->getPoints()[0]->setIM(0);
-      //          for(uint i=0 ;i<121; i+=7)
-      //          m_testObj->getPoints()[i]->setIM(0);
-
-        m_testObj->getPoints()[20]->setIM(0);
-//        m_testObj->getPoints()[21]->setIM(0);
-
-        m_testObj->getPoints()[0]->setIM(0);
-//        m_testObj->getPoints()[22]->setIM(0);
-
-        //        m_testObj->getPoints()[23]->setIM(0);
-        //        m_testObj->getPoints()[34]->setIM(0);
+        //        }
+        std::cout<<"Bending cons size is: "<<TestObj->getBendingConstraints().size()<<"\n";
     }
     else
     {
         std::cout<<"its not working";
     }
 }
+void GLWidget::addSmolPlain()
+{
+    auto TestObj = std::shared_ptr<LuHu::PBDobject>(new LuHu::PBDobject);
 
+    std::vector<glm::vec3> positions{
+        glm::vec3(0),
+                glm::vec3(0,0,1),
+                glm::vec3(0,0,2),
+                glm::vec3(1,0,0),
+                glm::vec3(1,0,1),
+                glm::vec3(1,0,2),
+                glm::vec3(2,0,0),
+                glm::vec3(2,0,1),
+                glm::vec3(2,0,2),
+    };
+    std::vector<glm::vec3> velocities{
+        glm::vec3(0),
+                glm::vec3(0),
+                glm::vec3(0),
+                glm::vec3(0),
+                glm::vec3(0),
+                glm::vec3(0),
+                glm::vec3(0),
+                glm::vec3(0),
+                glm::vec3(0),
+
+    };
+
+    std::vector<float> masses{1,1,1,1,1,1,1,1,1};
+    TestObj->Initialize(glm::vec3(0,1,0),positions, velocities, masses);
+
+    std::vector<uint> ditConsraints{0,1,
+                                    1,2,
+                                    0,3,
+                                    0,4,
+                                    1,4,
+                                    1,5,
+                                    2,5,
+                                    3,4,
+                                    4,5,
+                                    3,6,
+                                    3,7,
+                                    4,7,
+                                    4,8,
+                                    6,7,
+                                    7,8,
+                                    5,8
+                                   };
+
+    //    std::vector<uint> bendConstraints{0,3,6,
+    //                                     1,4,7,
+    //                                     2,5,8,
+    //                                     3,4,5,
+    //                                     6,7,8};
+
+    TestObj->addBendingConstraints(LuHu::generateBendConstraints(TestObj->getPointPositions(), TestObj->getDistanceConstraints()));
+    TestObj->addDistConstraints(ditConsraints);
+    //TestObj->addBendingConstraints(bendConstraints);
+    TestObj->setPointInvMass(0,0);
+    TestObj->setPointInvMass(6,0);
+
+    m_solver->addPBDobject(TestObj);
+
+}
 void GLWidget::addcube()
 {
-    auto m_testObj = std::shared_ptr<LuHu::PBDobject>(new LuHu::PBDobject);
-    auto a=m_testObj->Initialize("/home/s4906706/Documents/AP/Projects/APproj/LuHuPBDLib/PBDLib/models/deCube.obj",0,glm::vec3(0,5,0));
+    std::shared_ptr<LuHu::PBDobject> TestObj(new LuHu::PBDobject);
+
+    auto a=TestObj->Initialize("deCube.obj",0,glm::vec3(0,5,0),1);
+
     if(a)
     {
-        m_solver->addPBDobject(m_testObj);
-        m_testObj->getPoints()[0]->setIM(0);
+        m_solver->addPBDobject(TestObj);
+
+        TestObj->setPointInvMass(0,0);
+        TestObj->addBendingConstraints(LuHu::generateBendConstraints(TestObj->getPointPositions(), TestObj->getDistanceConstraints()));
     }
     else
     {
@@ -217,38 +234,38 @@ void GLWidget::addcube()
 
 void GLWidget::addCone()
 {
-    auto m_testObj = std::shared_ptr<LuHu::PBDobject>(new LuHu::PBDobject);
-    auto a=m_testObj->Initialize("/home/s4906706/Documents/AP/Projects/APproj/LuHuPBDLib/PBDLib/models/cone.obj",0,glm::vec3(0));
+    //    auto m_testObj = std::shared_ptr<LuHu::PBDobject>(new LuHu::PBDobject);
+    //    auto a=m_testObj->Initialize("/home/s4906706/Documents/AP/Projects/APproj/LuHuPBDLib/PBDLib/models/cone.obj",0,glm::vec3(0));
 
-    if(a)
-    {
-        auto testobj =m_testObj->getPoints();
+    //    if(a)
+    //    {
+    //        auto testobj =m_testObj->getPoints();
 
-        std::shared_ptr<LuHu::point> topPoint;
-        for(auto p : testobj)
-        {
-            if(p.get()->getP().y>0.1)
-            {
-                topPoint=p;
+    //        std::shared_ptr<LuHu::point> topPoint;
+    //        for(auto p : testobj)
+    //        {
+    //            if(p.get()->getP().y>0.1)
+    //            {
+    //                topPoint=p;
 
-            }
-        }
-        std::shared_ptr<LuHu::point> newp(new LuHu::point(glm::vec3(0,5,0), glm::vec3(0,0,0), 1.0));
+    //            }
+    //        }
+    //        std::shared_ptr<LuHu::point> newp(new LuHu::point(glm::vec3(0,5,0), glm::vec3(0,0,0), 1.0));
 
-        newp->setIM(0);
-        std::shared_ptr<LuHu::distanceConstraint> newCon(new LuHu::distanceConstraint(newp,topPoint));
+    //        newp->setIM(0);
+    //        std::shared_ptr<LuHu::distanceConstraint> newCon(new LuHu::distanceConstraint(newp,topPoint));
 
-        newCon->setRestLength(5);
+    //        newCon->setRestLength(5);
 
-        m_solver->addPBDobject(m_testObj);
+    //        m_solver->addPBDobject(m_testObj);
 
-        m_testObj->addPoint(newp);
-        m_testObj->addConstraint(newCon);
-    }
-    else
-    {
-        std::cout<<"its not working";
-    }
+    //        m_testObj->addPoint(newp);
+    //        m_testObj->addConstraint(newCon);
+    //    }
+    //    else
+    //    {
+    //        std::cout<<"its not working";
+    //    }
 }
 
 bool GLWidget::drawPBDObjects(paintType _type)
@@ -259,20 +276,23 @@ bool GLWidget::drawPBDObjects(paintType _type)
     {
         for(auto o : m_solver->getObjects())
         {
-            switch (_type) {
+            switch (_type)
+            {
             case LINES:
             {
                 glBegin(GL_LINES);
 
 
-                for(uint i=0; i<o->getConstraints().size(); i++)
+                for(uint i=0; i<o->getDistanceConstraints().size(); i+=2)
                 {
+                    uint ConIndex1=o->getDistanceConstraints()[i];
+                    uint ConIndex2=o->getDistanceConstraints()[i+1];
 
-                    auto p1 = o->getConstraints()[i]->getPoint(0)->getP();
-                    auto w1 = o->getConstraints()[i]->getPoint(0)->getIM();
+                    auto p1 = o->getPointPosition(ConIndex1);
+                    auto p2 = o->getPointPosition(ConIndex2);
 
-                    auto p2 = o->getConstraints()[i]->getPoint(1)->getP();
-                    auto w2 = o->getConstraints()[i]->getPoint(1)->getIM();
+                    auto w1 = o->getPointInvMass(ConIndex1);
+                    auto w2 = o->getPointInvMass(ConIndex2);
 
                     if(w1== 0 )
                         glColor3f(0, 0, 1);
@@ -296,15 +316,20 @@ bool GLWidget::drawPBDObjects(paintType _type)
             {
                 glBegin(GL_TRIANGLES);
 
-                for(uint i=0; i<o.get()->getFacesPoints().size()-1; i+=3)
+                for(uint i=0; i<o->getFacesPoints().size()-1; i+=3)
                 {
-                    auto p1=o->getFacesPoints()[i]->getP();
-                    auto p2=o->getFacesPoints()[i+1]->getP();
-                    auto p3=o->getFacesPoints()[i+2]->getP();
 
-                    auto w1 = o->getFacesPoints()[i]->getIM();
-                    auto w2 = o->getFacesPoints()[i+1]->getIM();
-                    auto w3 = o->getFacesPoints()[i +2]->getIM();
+                    auto index1=o->getFacesPoints()[i];
+                    auto index2=o->getFacesPoints()[i+1];
+                    auto index3=o->getFacesPoints()[i+2];
+
+                    auto p1=o->getPointPosition(index1);
+                    auto p2=o->getPointPosition(index2);
+                    auto p3=o->getPointPosition(index3);
+
+                    auto w1 = o->getFacesPoints()[index1];
+                    auto w2 = o->getFacesPoints()[index2];
+                    auto w3 = o->getFacesPoints()[index3];
 
                     if(w1== 0 )
                         glColor3f(0, 0, 1);
@@ -331,8 +356,6 @@ bool GLWidget::drawPBDObjects(paintType _type)
                 glEnd();
                 break;
             }
-            default:
-                break;
             }
 
         }
@@ -341,7 +364,52 @@ bool GLWidget::drawPBDObjects(paintType _type)
 
 void GLWidget::drawGrid(uint size)
 {
+
     glBegin(GL_LINES);
 
+    glLineWidth(3);
+    glColor3f(1,0,0); //x red
+    glVertex3f(0,0.01f,0);
+    glVertex3f(1,0.01f,0);
+
+    glColor3f(0,1,0);// y green
+    glVertex3f(0,0.01f,0);
+    glVertex3f(0,1.01f,0);
+
+    glColor3f(0,0,1);// z blue
+    glVertex3f(0,0.01f,0);
+    glVertex3f(0,0.01f,1);
+
+
+    glLineWidth(1);
+    glColor3f(0.6,0.6,0.6);
+    float scale=0.5;
+    for(int x=0; x<size+1; x++)
+    {
+        for(int z=0; z<size+1; z++)
+        {
+            float xx=x*scale-(size*scale)/2;
+            float zz=z*scale-(size*scale)/2;
+
+            if(x==(size+1)/2 || z==(size+1)/2 ){
+                glColor3f(0.9,0.7,0.5);
+            }
+            else {
+                glColor3f(0.6,0.6,0.6);
+
+            }
+
+            glVertex3f(xx,0,zz);
+
+            glVertex3f(xx,0,(size*scale)/2);
+
+
+
+            glVertex3f(zz,0,xx);
+
+            glVertex3f((size*scale)/2,0,xx);
+
+        }
+    }
     glEnd();
 }

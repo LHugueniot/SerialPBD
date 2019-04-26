@@ -112,15 +112,20 @@ TEST(PBDobject, initialise_true_using_obj_mesh)
     }
 
     std::vector<uint> objUniqueEdges;
+    std::vector<float> objEdgesLengths;
 
-    for(auto p : uniqueEdges)
+    for(uint i=0; i<uniqueEdges.size(); i++)
     {
-        objUniqueEdges.push_back(p.p1);
-        objUniqueEdges.push_back(p.p2);
+        objUniqueEdges.push_back(uniqueEdges[i].p1);
+        objUniqueEdges.push_back(uniqueEdges[i].p2);
+        glm::vec3 _p1 = uniquePoints[uniqueEdges[i].p1];
+        glm::vec3 _p2 = uniquePoints[uniqueEdges[i].p2];
+        float restLen = glm::length(_p1 - _p2);
+        objEdgesLengths.push_back(restLen);
     }
 
     ASSERT_EQ(TestObj.getPointPositions(),  uniquePointsPlusPos );
     ASSERT_EQ(TestObj.getFacesPoints(),     objUniqueFaces      );
     ASSERT_EQ(TestObj.getDistanceConstraints(), objUniqueEdges      );
-
+    ASSERT_EQ(TestObj.getDistConRestLength(), objEdgesLengths);
 }

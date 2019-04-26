@@ -77,6 +77,9 @@ std::vector<glm::vec3> storePoints(aiMesh* _assimpMesh);
 
 std::vector<indexTrio> storeFaceIndices(aiMesh* _assimpMesh);
 
+std::vector<uint> generateBendConstraints(const std::vector<glm::vec3> pointPositions,
+                                          const std::vector<uint> distanceConstraints);
+
 
 //-------------------------------------------------Mesh--------------------------------------------------
 
@@ -86,9 +89,12 @@ struct Mesh{
                                             Model=getModel(_model);
                                             if(Model!=NULL)
                                             {
+                                                std::cout<<"Loading in mesh from model\n";
                                                 m_assimpMesh=Model->mMeshes[_index];
                                                 m_pointPositions=storePoints(m_assimpMesh);
                                                 m_faceIndices=storeFaceIndices(m_assimpMesh);
+                                            } else {
+                                                std::cout<<"Mesh could not be loaded\n";
                                             }
                                          }
 

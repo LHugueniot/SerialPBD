@@ -24,21 +24,23 @@ public:
 
     /// @brief addPBDobject, adds a PBDobject to the simulation
 
-    bool addPBDobject(std::shared_ptr<PBDobject> &_PBDobjectPtr);
-    bool addPBDobject(PBDobject &_PBDobjectPtr);
+    std::shared_ptr<LuHu::PBDobject> addPBDobject(std::shared_ptr<PBDobject> _PBDobjectPtr);
+    std::shared_ptr<PBDobject> addPBDobject(PBDobject &_PBDobjectPtr);
 
     /// @brief rmPBDobject, removes a PBDobject to the simulation
 
     bool rmPBDobject(std::shared_ptr<LuHu::PBDobject> _PBDobjectPtr);
     bool rmPBDobject(uint index);
 
+
+    bool setPBDobject(uint index, std::shared_ptr<LuHu::PBDobject> _PBDobjectPtr);
     /// @brief getObjects returns a vector of shared pointers to PBDobjects
 
     std::vector<std::shared_ptr<LuHu::PBDobject>> getObjects() const;
 
     /// @brief RunSolver, main solver loop that runs based on time step, dt
 
-    void RunSolver(float dt);
+    void RunSolver(float dt, uint iterations);
 
 
 private:

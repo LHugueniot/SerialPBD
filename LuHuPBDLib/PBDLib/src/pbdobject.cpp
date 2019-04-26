@@ -19,6 +19,12 @@ bool PBDobject::Initialize(std::string _model, uint _meshIndex, glm::vec3 _origi
     for (uint i=0; i<m_pointPos.size(); i++) {
         m_pointMass.push_back(_allPointsMass);
         m_pointVel.push_back(glm::vec3(0));
+        if (m_pointMass[i]>0){
+            m_pointInvMass.push_back(1/m_pointMass[i]);
+        }
+        else {
+            m_pointInvMass.push_back(FLT_MAX);
+        }
     }
 
 
@@ -32,8 +38,7 @@ bool PBDobject::Initialize(std::string _model, uint _meshIndex, glm::vec3 _origi
         m_facePoints.push_back(uniqueFaces[i].p3);
     }
     for (uint i=0; i<uniqueEdges.size();i++) {
-        m_distanceConstraint.push_back(uniqueEdges[i].p1);
-        m_distanceConstraint.push_back(uniqueEdges[i].p2);
+        addDistConstraint(uniqueEdges[i].p1, uniqueEdges[i].p2);
     }
     for (auto &p : m_pointPos)
     {
@@ -55,6 +60,15 @@ bool PBDobject::Initialize(glm::vec3 _originalPos, std::vector<glm::vec3> _Point
         m_pointVel=_PointVel;
         m_pointMass=_PointMass;
 
+        for (uint i=0; i<m_pointPos.size(); i++) {
+            if (m_pointMass[i]>0){
+                m_pointInvMass.push_back(1/m_pointMass[i]);
+            }
+            else {
+                m_pointInvMass.push_back(FLT_MAX);
+            }
+        }
+
         for(auto p : m_pointPos)
         {
             p+=m_originalPosition;
@@ -68,47 +82,47 @@ bool PBDobject::Initialize(glm::vec3 _originalPos, std::vector<glm::vec3> _Point
     }
 }
 
-const glm::vec3 PBDobject::getPointPosition(uint _index) const
+const glm::vec3 &PBDobject::getPointPosition(uint _index) const
 {
     if(_index < m_pointPos.size()){
         return m_pointPos[_index];
     }
     else {
-        std::cout<<"Index is out of range\n";
+        std::cout<<"getPointPosition: Index is out of range\n";
         return glm::vec3(0);
     }
 
 }
 
-const glm::vec3 PBDobject::getPointVelocity(uint _index) const
+const glm::vec3 &PBDobject::getPointVelocity(uint _index) const
 {
     if(_index < m_pointVel.size()){
         return m_pointVel[_index];
     }
     else {
-        std::cout<<"Index is out of range\n";
+        std::cout<<"getPointVelocity: Index is out of range\n";
         return glm::vec3(0);
     }
 }
 
-float PBDobject::getPointMass(uint _index) const
+const float &PBDobject::getPointMass(uint _index) const
 {
     if(_index < m_pointMass.size()){
         return m_pointMass[_index];
     }
     else {
-        std::cout<<"Index is out of range\n";
+        std::cout<<"getPointMass: Index is out of range\n";
         return 0.0f;
     }
 }
 
-float PBDobject::getPointInvMass(uint _index) const
+const float &PBDobject::getPointInvMass(uint _index) const
 {
     if(_index < m_pointInvMass.size()){
         return m_pointInvMass[_index];
     }
     else {
-        std::cout<<"Index is out of range\n";
+        std::cout<<"getPointInvMass: Index is out of range\n";
         return 0.0f;
     }
 }
@@ -119,7 +133,7 @@ bool PBDobject::setPointPosition(uint _index, glm::vec3 _newPos)
         m_pointPos[_index]=_newPos;
         return true;
     }
-    std::cout<<"Index is out of range!\n";
+    std::cout<<"setPointPosition: Index is out of range!\n";
     return false;
 }
 
@@ -129,7 +143,7 @@ bool PBDobject::setPointVelocity(uint _index, glm::vec3 _newVel)
         m_pointVel[_index]=_newVel;
         return true;
     }
-    std::cout<<"Index is out of range!\n";
+    std::cout<<"setPointVelocity: Index is out of range!\n";
     return false;
 }
 
@@ -139,7 +153,7 @@ bool PBDobject::setPointMass(uint _index, float _newMass)
         m_pointMass[_index]=_newMass;
         return true;
     }
-    std::cout<<"Index is out of range!\n";
+    std::cout<<"setPointMass: Index is out of range!\n";
     return false;
 }
 
@@ -149,26 +163,26 @@ bool PBDobject::setPointInvMass(uint _index, float _newInvMass)
         m_pointInvMass[_index]=_newInvMass;
         return true;
     }
-    std::cout<<"Index is out of range!\n";
+    std::cout<<"setPointInvMass: Index is out of range!\n";
     return false;
 }
 
-const std::vector<glm::vec3> PBDobject::getPointPositions() const
+const std::vector<glm::vec3> &PBDobject::getPointPositions() const
 {
     return m_pointPos;
 }
 
-const std::vector<glm::vec3> PBDobject::getPointVelocities() const
+const std::vector<glm::vec3> &PBDobject::getPointVelocities() const
 {
     return m_pointVel;
 }
 
-const std::vector<float> PBDobject::getPointMasses() const
+const std::vector<float> &PBDobject::getPointMasses() const
 {
     return m_pointMass;
 }
 
-const std::vector<float> PBDobject::getPointInvMasses() const
+const std::vector<float> &PBDobject::getPointInvMasses() const
 {
     return m_pointInvMass;
 }
@@ -209,7 +223,7 @@ bool PBDobject::addPoints(std::vector<glm::vec3> _newPointPos,
 bool PBDobject::addDistConstraint(uint _IndexPoint1, uint _IndexPoint2)
 {
     if(_IndexPoint1<m_pointPos.size() &&
-       _IndexPoint2<m_pointPos.size())
+            _IndexPoint2<m_pointPos.size())
     {
         m_distanceConstraint.push_back(_IndexPoint1);
         m_distanceConstraint.push_back(_IndexPoint2);
@@ -249,12 +263,12 @@ bool PBDobject::addDistConstraints(std::vector<uint> _IndexPoint)
     }
 }
 
-const std::vector<uint> PBDobject::getDistanceConstraints() const
+const std::vector<uint> &PBDobject::getDistanceConstraints() const
 {
     return m_distanceConstraint;
 }
 
-const std::vector<float> PBDobject::getDistConRestLength() const
+const std::vector<float> &PBDobject::getDistConRestLength() const
 {
     return m_distanceConRestLength;
 }
@@ -262,13 +276,20 @@ const std::vector<float> PBDobject::getDistConRestLength() const
 bool PBDobject::addBendingConstraint(uint _IndexPoint1, uint _IndexPoint2, uint _IndexPoint3)
 {
     if((_IndexPoint1<m_pointPos.size()) &&
-       (_IndexPoint2<m_pointPos.size()) &&
-       (_IndexPoint3<m_pointPos.size()) )
+            (_IndexPoint2<m_pointPos.size()) &&
+            (_IndexPoint3<m_pointPos.size()) )
     {
         m_bendingConstraint.push_back(_IndexPoint1);
         m_bendingConstraint.push_back(_IndexPoint2);
         m_bendingConstraint.push_back(_IndexPoint3);
 
+        float third=1/3;
+        float h0= glm::length((third * (m_pointPos[_IndexPoint1] +
+                                m_pointPos[_IndexPoint2] +
+                               m_pointPos[_IndexPoint3]) ) -
+                m_pointPos[_IndexPoint2]);
+
+        m_bendingConRestLength.push_back(h0);
         return true;
     }
     return false;
@@ -278,12 +299,22 @@ bool PBDobject::addBendingConstraints(std::vector<uint> _IndexPoint)
 {
     if(_IndexPoint.size()%3==0)
     {
-        for(auto p :_IndexPoint)
+        for(uint i=0; i<_IndexPoint.size(); i+=3)
         {
-            if(p>m_pointPos.size()){
-                std::cout<<"Index is out of range!\n";
+            if(_IndexPoint[i]>m_pointPos.size() ||
+                    _IndexPoint[i+1]>m_pointPos.size() ||
+                    _IndexPoint[i+2]>m_pointPos.size()
+                    ){
+                std::cout<<"addBendingConstraints: Index is out of range!\n";
                 return false;
             }
+            float third=1/3;
+            float h0= glm::length((third * (m_pointPos[_IndexPoint[i]] +
+                                    m_pointPos[_IndexPoint[i+1]] +
+                                   m_pointPos[_IndexPoint[i+2]]) ) -
+                    m_pointPos[_IndexPoint[i+1]]);
+
+            m_bendingConRestLength.push_back(h0);
         }
         m_bendingConstraint.insert(m_bendingConstraint.end(), _IndexPoint.begin(), _IndexPoint.end());
         return true;
@@ -295,15 +326,21 @@ bool PBDobject::addBendingConstraints(std::vector<uint> _IndexPoint)
     }
 }
 
-const std::vector<uint> PBDobject::getBendingConstraints() const
+const std::vector<uint> &PBDobject::getBendingConstraints() const
 {
     return m_bendingConstraint;
 }
 
-const std::vector<uint> PBDobject::getFacesPoints() const
+const std::vector<float> &PBDobject::getBenConRestLength() const
+{
+    return m_bendingConRestLength;
+}
+
+const std::vector<uint> &PBDobject::getFacesPoints() const
 {
     return m_facePoints;
 }
+
 
 std::vector<std::vector<uint>> PBDobject::generateColourMap()
 {
@@ -331,21 +368,21 @@ std::vector<std::vector<uint>> PBDobject::generateColourMap()
         }
     }
 
-    for(uint k =0; k< nodeGraph.size(); k++)
-    {
-//        std::cout<<"Constraint "<<m_distanceConstraint[k*2]<<" "<<m_distanceConstraint[k*2+1]<<" is connected to: \n";
-//        for(uint f =0; f< nodeGraph[k].size(); f++)
-//        {
-//            std::cout<<m_distanceConstraint[nodeGraph[k][f]*2]<<" "<<m_distanceConstraint[nodeGraph[k][f]*2+1]<<"\n";
-//        }
-    }
+    //    for(uint k =0; k< nodeGraph.size(); k++)
+    //    {
+    //        std::cout<<"Constraint "<<m_distanceConstraint[k*2]<<" "<<m_distanceConstraint[k*2+1]<<" is connected to: \n";
+    //        for(uint f =0; f< nodeGraph[k].size(); f++)
+    //        {
+    //            std::cout<<m_distanceConstraint[nodeGraph[k][f]*2]<<" "<<m_distanceConstraint[nodeGraph[k][f]*2+1]<<"\n";
+    //        }
+    //    }
 
 
-    uint nodegraphsize=0;
-    for(auto b : nodeGraph)
-    {
-        nodegraphsize+=b.size();
-    }
+//    uint nodegraphsize=0;
+//    for(auto b : nodeGraph)
+//    {
+//        nodegraphsize+=b.size();
+//    }
 
     //std::cout<<"\nNodeGraph is of size:"<<nodegraphsize<<"\n\n";
 

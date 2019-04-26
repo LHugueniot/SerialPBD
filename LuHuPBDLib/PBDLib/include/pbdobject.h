@@ -45,21 +45,21 @@ public:
 
 
 
-    const glm::vec3 getPointPosition(uint _index) const;
+    const glm::vec3 &getPointPosition(uint _index) const;
 
-    const glm::vec3 getPointVelocity(uint _index) const;
+    const glm::vec3 &getPointVelocity(uint _index) const;
 
-    float getPointMass(uint _index) const;
+    const float &getPointMass(uint _index) const;
 
-     float getPointInvMass(uint _index) const;
+     const float &getPointInvMass(uint _index) const;
 
-    const std::vector<glm::vec3> getPointPositions() const;
+    const std::vector<glm::vec3> &getPointPositions() const;
 
-    const std::vector<glm::vec3> getPointVelocities() const;
+    const std::vector<glm::vec3> &getPointVelocities() const;
 
-    const std::vector<float> getPointMasses() const;
+    const std::vector<float> &getPointMasses() const;
 
-    const std::vector<float> getPointInvMasses() const;
+    const std::vector<float> &getPointInvMasses() const;
 
 
 
@@ -80,41 +80,40 @@ public:
 
     bool addDistConstraints(std::vector<uint> _IndexPoint);
 
-    const std::vector<uint> getDistanceConstraints()const;
+    const std::vector<uint> &getDistanceConstraints()const;
 
-    const std::vector<float> getDistConRestLength() const;
+    const std::vector<float> &getDistConRestLength() const;
 
     bool addBendingConstraint(uint _IndexPoint1, uint _IndexPoint2, uint _IndexPoint3);
 
     bool addBendingConstraints(std::vector<uint> _IndexPoint1);
 
-    const std::vector<uint> getBendingConstraints() const;
+    const std::vector<uint> &getBendingConstraints() const;
+
+    const std::vector<float> &getBenConRestLength() const;
 
     //=================================================================================================================================
     /// @brief returns faces based on points
     //=================================================================================================================================
-    const std::vector<uint> getFacesPoints() const;
+    const std::vector<uint> &getFacesPoints() const;
 
     std::vector<std::vector<uint>> generateColourMap();
 
     //=================================================================================================================================
     /// @brief returns modelName
     //=================================================================================================================================
-    std::string getName() const { return m_modelName; }
+    const std::string &getName() const { return m_modelName; }
 
     //=================================================================================================================================
     /// @brief returns original model world space pos
     //=================================================================================================================================
-    glm::vec3 getOriginalPos() const
-    {
-        return m_originalPosition;
-    }
+    const glm::vec3 &getOriginalPos() const { return m_originalPosition; }
 
 private:
 
     /// @param string storing model name
 
-    std::string m_modelName;
+    std::string m_modelName="";
 
     /// @param stores original position
 
@@ -133,6 +132,8 @@ private:
     std::vector<float> m_distanceConRestLength;
 
     std::vector<uint> m_bendingConstraint;
+
+    std::vector<float> m_bendingConRestLength;
 
     std::vector<uint> m_facePoints;
 };

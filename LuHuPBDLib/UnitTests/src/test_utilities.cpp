@@ -6,7 +6,8 @@ TEST(utilities, getModel)
     auto testScene = LuHu::getModel("deCube.obj");
 
     const aiScene* scene= aiImportFile(
-    "/home/s4906706/Documents/AP/Projects/CudaPBD/LuHuPBDLib/models/deCube.obj",
+    //"/home/s4906706/Documents/AP/Projects/CudaPBD/LuHuPBDLib/models/deCube.obj",
+                "/home/datlucien/Documents/AP/CudaPBD/LuHuPBDLib/models/deCube.obj",
                                        aiProcess_CalcTangentSpace       |
                                        aiProcess_Triangulate            |
                                        aiProcess_JoinIdenticalVertices  |
@@ -84,4 +85,53 @@ TEST(utilities, storeFaceIndices)
         EXPECT_EQ(assimpMesh->mFaces[i].mIndices[1], faceIndices[i].p2);
         EXPECT_EQ(assimpMesh->mFaces[i].mIndices[2], faceIndices[i].p3);
     }
+}
+
+TEST(utilities ,generateBendingConstraints)
+{
+
+    std::vector<glm::vec3> positions{
+                glm::vec3(0),//0
+                glm::vec3(0,0,1), //1
+                glm::vec3(0,0,2), //2
+                glm::vec3(1,0,0), //3
+                glm::vec3(1,0,1), //4
+                glm::vec3(1,0,2), //5
+                glm::vec3(2,0,0), //6
+                glm::vec3(2,0,1), //7
+                glm::vec3(2,0,2), //8
+    };
+
+    std::vector<uint> distConsraints{0,1,
+                                    1,2,
+                                    0,3,
+                                    0,4,
+                                    1,4,
+                                    1,5,
+                                    2,5,
+                                    3,4,
+                                    4,5,
+                                    3,6,
+                                    3,7,
+                                    4,7,
+                                    4,8,
+                                    6,7,
+                                    7,8,
+                                    5,8
+    };
+    std::vector<uint> expectedBendingConstraints{
+        0, 1, 5,
+        2, 1, 0,
+        0, 3, 7,
+        6, 3, 0,
+        0, 4, 8,
+        1, 4, 8,
+        3, 4, 8,
+        2, 5, 8,
+        6, 7, 8
+    };
+
+    auto bendingConstraints = LuHu::generateBendConstraints(positions, distConsraints);
+
+    EXPECT_EQ(bendingConstraints, expectedBendingConstraints);
 }

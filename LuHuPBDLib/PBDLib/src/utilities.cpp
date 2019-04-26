@@ -133,4 +133,76 @@ std::vector<indexDuo> Mesh::getEdgeIndices(std::vector<glm::vec3> _uniquePoints,
     }
     return uniqueEdgeIndices;
 }
+
+std::vector<uint> generateBendConstraints(const std::vector<glm::vec3> pointPositions,
+                                          const std::vector<uint> distanceConstraints)
+{
+    std::vector<uint> bendingConstraints;
+    if(distanceConstraints.size()%2!=0)
+    {
+        std::cout<<"Incorect dist constraint array, size is not a multiple of 2\n";
+        return std::vector<uint>{0};
+    }
+    std::vector<std::vector<uint>> nodeGraph(pointPositions.size());
+
+    for(uint i=0; i<pointPositions.size(); i++)
+    {
+        for(uint j=0; j<distanceConstraints.size(); j+=2)
+        {
+            if((distanceConstraints[j]== i) || (distanceConstraints[j+1]== i ))
+            {
+                if(distanceConstraints[j]== i)
+                    nodeGraph[i].push_back(distanceConstraints[j+1]);
+
+                if(distanceConstraints[j+1]== i)
+                    nodeGraph[i].push_back(distanceConstraints[j]);
+            }
+        }
+    }
+
+    for (uint v=0;v<nodeGraph.size(); v++)
+    {
+        for (auto vi :nodeGraph[v])
+        {
+            float bestAngle=0;
+            uint bestVert=vi;
+            for (auto vj :nodeGraph[v])
+            {
+                if(vi==vj)continue;
+
+                glm::vec3 vit1=pointPositions[v];
+                glm::vec3 vit2=pointPositions[vi];
+                glm::vec3 vit3=pointPositions[vj];
+
+                float potentialAngle= glm::dot((vit2-vit1), (vit3-vit1))/
+                                      glm::length(vit2-vit1)*glm::length(vit3-vit1);
+                if(potentialAngle<bestAngle)
+                {
+                    bestAngle=potentialAngle;
+                    bestVert=vj;
+                }
+            }
+            if(vi==bestVert)continue;
+            bool found=false;
+            for (uint it4=0;it4<bendingConstraints.size(); it4+=3)
+            {
+
+                if (((bendingConstraints[it4]==bestVert) && (bendingConstraints[it4+2]==vi) )||
+                    ((bendingConstraints[it4+2]==bestVert) && (bendingConstraints[it4]==vi))){
+                    found=true;
+                    continue;
+                }
+            }
+            if(!found)
+            {
+                bendingConstraints.push_back(vi);
+                bendingConstraints.push_back(v);
+                bendingConstraints.push_back(bestVert);
+            }
+
+        }
+    }
+    return bendingConstraints;
+}
+
 }

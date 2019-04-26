@@ -8,7 +8,7 @@ QT       += core gui opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = OGL
+TARGET = build/OGL
 TEMPLATE = app
 
 CONFIG+=c++11
@@ -24,23 +24,27 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+#=============Dependencies and Libs=========
 
-LIBS +=  -L../PBDLib/build -lPBDLib -lglut -lGL -lGLU
-
-INCLUDEPATH+= /usr/local/bin/ include ../PBDLib/include
+INCLUDEPATH+= /usr/local/bin/ include
 
 SOURCES +=  $$files($$PWD/src/*.cpp)
 
 HEADERS += $$files($$PWD/include/*.h)
 
+LIBS +=  -L$$PWD/../PBDLib/build -lLuHuPBD -lglut -lGL -lGLU
+
+#=============QT dependencies===============
+
 MOC_DIR +=moc
 
 OBJECTS_DIR+= $$files($$PWD/obj)
 
-#DEFINE systempath = system_path($$PWD)
-
 FORMS += ui/mainwindow.ui
 
-#QMAKE_RPATHDIR+= ../PBDLib
+INCLUDEPATH+= ../PBDLib/include
 
-QMAKE_CXXFLAGS+=-O3
+QMAKE_RPATHDIR+= $$PWD/../PBDLib/build
+
+
+#QMAKE_CXXFLAGS+=-O3
